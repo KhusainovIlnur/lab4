@@ -5,13 +5,17 @@ public class Visitor implements Runnable{
     private BusinessCenter place;
     private static int totalCount = 0; // счетчик посетителей
     private int num;
-    private int floor = new Random().nextInt(10 - 1 + 1) + 1;
+    private int floor;
 
-    public int randSleepTime = (new Random().nextInt(10 - 1 + 1) + 1) * 1000*2;
+    private int currentFloor;
+
+    public int randSleepTime = (new Random().nextInt(10 - 1 + 1) + 1) * 1000;
 
     public Visitor(BusinessCenter place) {
         this.place = place;
         num = ++totalCount;
+        floor = new Random().nextInt(10 - 1 + 1) + 1;
+        currentFloor = 1;
     }
 
     @Override
@@ -30,12 +34,12 @@ public class Visitor implements Runnable{
     }
 
     private void goUp() {
-        System.out.println(getTimer() + toString()  + "поднимается наверх");
-        try {
-            Thread.sleep(randSleepTime);
+        if (place.callLift(this)) {
+            place.moveLift(this, currentFloor);
+            place.enterLift(this);
+            place.moveLift(this, floor);
+            place.exitLift(this);
         }
-        catch (InterruptedException e) {}
-        System.out.println(getTimer() + toString()  + "поднялся наверх");
     }
 
     private void doSomeWork() {
@@ -48,12 +52,12 @@ public class Visitor implements Runnable{
     }
 
     private void goDown() {
-        System.out.println(getTimer() + toString()  + "спускается");
-        try {
-            Thread.sleep(randSleepTime);
+        if (place.callLift(this)) {
+            place.moveLift(this, floor);
+            place.enterLift(this);
+            place.moveLift(this, 1);
+            place.exitLift(this);
         }
-        catch (InterruptedException e) {}
-        System.out.println(getTimer() + toString()  + "спустился");
     }
 
     public String getTimer() {
