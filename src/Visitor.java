@@ -1,7 +1,7 @@
 import java.sql.Time;
 import java.util.Random;
 
-public class Visitor implements Runnable {
+public class Visitor {
     private BusinessCenter place;
     private static int totalCount = 0; // счетчик посетителей
     private int num;
@@ -18,22 +18,21 @@ public class Visitor implements Runnable {
         currentFloor = 1;
     }
 
-    @Override
     public void run() {
-        enterBuilding();
-        goUp();
-        doSomeWork();
-        goDown();
+//        enterBuilding();
+//        goUp();
+//        doSomeWork();
+//        goDown();
     }
 
-    private synchronized void enterBuilding() {
+    public synchronized void enterBuilding() {
         System.out.println(getTimer() + toString() + "входит");
         if (place.enterControl(this)) {
             place.passControl(this);
         }
     }
 
-    private void goUp() {
+    public void goUp() {
         if (place.callLift(this)) {
             place.moveLift(this, currentFloor);
             place.enterLift(this);
@@ -42,7 +41,7 @@ public class Visitor implements Runnable {
         }
     }
 
-    private void doSomeWork() {
+    public void doSomeWork() {
         System.out.println(getTimer() + toString()  + "начинает что то делать");
         try {
             Thread.sleep(randSleepTime);
@@ -51,7 +50,7 @@ public class Visitor implements Runnable {
         System.out.println(getTimer() + toString()  + "закончил");
     }
 
-    private void goDown() {
+    public void goDown() {
         if (place.callLift(this)) {
             place.moveLift(this, floor);
             place.enterLift(this);
