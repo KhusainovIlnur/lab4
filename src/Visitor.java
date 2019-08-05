@@ -1,7 +1,7 @@
 import java.sql.Time;
 import java.util.Random;
 
-public class Visitor implements Runnable{
+public class Visitor implements Runnable {
     private BusinessCenter place;
     private static int totalCount = 0; // счетчик посетителей
     private int num;
