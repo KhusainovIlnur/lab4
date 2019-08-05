@@ -1,5 +1,7 @@
 import javax.sound.midi.Soundbank;
 import java.util.Random;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BusinessCenter {
     private int liftFloor = 1;
@@ -11,19 +13,25 @@ public class BusinessCenter {
     private final Object lockP = new Object(); // для синхронизации проходной
     private final Object lockL = new Object(); // для синхронизации лифта
 
+    ReentrantLock lockerP, lockerL;
+    Condition conditionP, conditionL;
 
     public BusinessCenter() {
         liftFree = true;
+
+        lockerP = new ReentrantLock(); // создаем блокировку
+        conditionP = lockerP.newCondition(); // получаем условие, связанное с блокировкой
+
+        lockerL = new ReentrantLock(); // создаем блокировку
+        conditionL = lockerL.newCondition(); // получаем условие, связанное с блокировкой
     }
 
     public boolean enterControl(Visitor v) {
+        lockerP.lock();
         if (visitorAtControl != null) {
-            synchronized (lockP) {
-                try {
-                    lockP.wait();
-                } catch (InterruptedException e) {
-                }
-            }
+            try {
+                conditionP.await();
+            } catch (InterruptedException e) { }
         }
 
         visitorAtControl = v;
@@ -46,19 +54,15 @@ public class BusinessCenter {
         System.out.println(v.getTimer() + v.toString() + "проходную освободил");
 
         visitorAtControl = null;
-        synchronized (lockP) {
-            lockP.notify();
-        }
+        lockerP.unlock();
     }
 
     public boolean  callLift(Visitor v) {
+        lockerL.lock();
         if (!liftFree) {
-            synchronized (lockL) {
-                try {
-                    lockL.wait();
-                } catch (InterruptedException e) {
-                }
-            }
+            try {
+                conditionL.await();
+            } catch (InterruptedException e) { }
         }
 
         liftFree = false;
@@ -98,9 +102,7 @@ public class BusinessCenter {
     public void exitLift(Visitor v) {
         System.out.println(v.getTimer() + v.toString() + "вышел из лифта");
         liftFree = true;
-        synchronized (lockL) {
-            lockL.notify();
-        }
+        lockerL.unlock();
     }
 
     public long getTimeDiffSec() {
